@@ -6,8 +6,11 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,6 +19,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -31,7 +35,6 @@ public class TelaClientes extends JFrame {
 	private JList<String> listaDeClientes;
 	private DefaultListModel<String> model;
 	private JTextField searchField;
-	private JButton botaoVoltar;
 	private JLabel userDataLabel;
 	private JLabel accountDataLabel;
 
@@ -42,131 +45,127 @@ public class TelaClientes extends JFrame {
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		// Initializing components
 		model = new DefaultListModel<>();
-
-		ClienteDAO cDAO = new ClienteDAO(new ConexaoMySql());
-		List<String> clientes = cDAO.listarClientes();
-
-		for (String cliente : clientes) {
-			model.addElement(cliente);
-		}
-
 		listaDeClientes = new JList<>(model);
+		searchField = new JTextField(15);
+		userDataLabel = new JLabel();
+		accountDataLabel = new JLabel();
+
+		// Load client data
+		loadClientData();
+
+		// Layout setup
+		setLayout(new BorderLayout());
+
+		// Setup client list panel
+		JPanel listPanel = new JPanel(new BorderLayout());
+		listPanel.setBorder(BorderFactory.createTitledBorder("Clientes"));
+		listaDeClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		listaDeClientes.addListSelectionListener(e -> {
 			if (!e.getValueIsAdjusting()) {
 				handleSelection(listaDeClientes.getSelectedValue());
 			}
 		});
+		JScrollPane scrollPane = new JScrollPane(listaDeClientes);
+		listPanel.add(scrollPane, BorderLayout.CENTER);
+		add(listPanel, BorderLayout.WEST);
 
-		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		panel.add(listaDeClientes);
+		// Setup search panel
+		JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		searchPanel.add(new JLabel("Número de CPF:"));
+		searchPanel.add(searchField);
+		searchField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				filterList();
+			}
 
-		JScrollPane scrollPane = new JScrollPane(panel);
-		getContentPane().add(scrollPane, BorderLayout.CENTER);
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				filterList();
+			}
 
-		JPanel mainPanel = new JPanel(new GridBagLayout());
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				filterList();
+			}
+		});
+		add(searchPanel, BorderLayout.NORTH);
+
+		// Setup detail panel
+		JPanel detailPanel = new JPanel(new GridBagLayout());
+		detailPanel.setBorder(BorderFactory.createTitledBorder("Informações do Cliente"));
 		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.anchor = GridBagConstraints.CENTER;
-		constraints.insets = new Insets(10, 10, 10, 10);
+		constraints.anchor = GridBagConstraints.WEST;
+		constraints.insets = new Insets(5, 5, 5, 5);
 
 		JLabel titleLabel = new JLabel("Informações do Cliente");
 		titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
 		constraints.gridx = 0;
 		constraints.gridy = 0;
 		constraints.gridwidth = 2;
-		mainPanel.add(titleLabel, constraints);
+		detailPanel.add(titleLabel, constraints);
 
-		JLabel searchLabel = new JLabel("Número de CPF:");
-		searchField = new JTextField(9);
-		searchField.getDocument().addDocumentListener(new DocumentListener() {
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-				filterList();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-				filterList();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-				filterList();
-
-			}
-		});
-
-		constraints.gridx = 0;
-		constraints.gridy = 1;
 		constraints.gridwidth = 1;
-		mainPanel.add(searchLabel, constraints);
-
+		constraints.gridy = 1;
+		detailPanel.add(new JLabel("Nome:"), constraints);
 		constraints.gridx = 1;
-		mainPanel.add(searchField, constraints);
-
-		botaoVoltar = new JButton("Voltar");
-		botaoVoltar.addActionListener(e -> voltarTela());
+		detailPanel.add(userDataLabel, constraints);
 
 		constraints.gridx = 0;
 		constraints.gridy = 2;
-		constraints.gridwidth = 2;
-		mainPanel.add(botaoVoltar, constraints);
+		detailPanel.add(new JLabel("Contas:"), constraints);
+		constraints.gridx = 1;
+		detailPanel.add(accountDataLabel, constraints);
 
-		userDataLabel = new JLabel();
-		constraints.gridx = 0;
-		constraints.gridy = 3;
-		constraints.gridwidth = 2;
-		mainPanel.add(userDataLabel, constraints);
+		add(detailPanel, BorderLayout.CENTER);
 
-		accountDataLabel = new JLabel();
-		constraints.gridx = 0;
-		constraints.gridy = 4;
-		constraints.gridwidth = 2;
-		mainPanel.add(accountDataLabel, constraints);
-
-		getContentPane().add(mainPanel, BorderLayout.EAST);
+		// Setup back button
+		JButton backButton = new JButton("Voltar");
+		backButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				voltarTela();
+			}
+		});
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		buttonPanel.add(backButton);
+		add(buttonPanel, BorderLayout.SOUTH);
 
 		setVisible(true);
 	}
 
-	public void voltarTela() {
-		dispose();
-		new TelaPrincipal();
+	private void loadClientData() {
+		ClienteDAO cDAO = new ClienteDAO(new ConexaoMySql());
+		List<String> clientes = cDAO.listarClientes();
+		model.clear();
+		for (String cliente : clientes) {
+			model.addElement(cliente);
+		}
 	}
 
 	private void filterList() {
 		String searchTerm = searchField.getText().toLowerCase();
 		DefaultListModel<String> filteredModel = new DefaultListModel<>();
-
 		for (int i = 0; i < model.size(); i++) {
 			String item = model.getElementAt(i);
-			String cpf = extrairCpf(item);
-
-			if (cpf.toLowerCase().contains(searchTerm)) {
+			if (extrairCpf(item).toLowerCase().contains(searchTerm)) {
 				filteredModel.addElement(item);
 			}
 		}
-
 		listaDeClientes.setModel(filteredModel);
 	}
 
-	public String extrairCpf(String item) {
-		
+	private String extrairCpf(String item) {
 		if (item == null) {
 			return "";
 		}
-		
-		String cpf = item.replaceAll("\\D", "");
-		return cpf;
+		return item.replaceAll("\\D", "");
 	}
 
 	private void handleSelection(String selectedValue) {
 		String cpf = extrairCpf(selectedValue);
-
 		ClienteDAO dado = new ClienteDAO(new ConexaoMySql());
 		ICliente cliente = dado.buscarClientePorCpf(cpf);
 
@@ -179,14 +178,13 @@ public class TelaClientes extends JFrame {
 			userDataLabel.setText(dadosDoCliente.toString());
 
 			List<IConta> contas = cliente.getContas();
-
 			if (contas != null && !contas.isEmpty()) {
 				StringBuilder dadosConta = new StringBuilder();
 				dadosConta.append("<html>Contas:<br/>");
 				for (IConta conta : contas) {
 					dadosConta.append("Número: ").append(conta.getNumero()).append("<br/>");
 					dadosConta.append("Tipo: ").append(conta.getTipo()).append("<br/>");
-					dadosConta.append("Saldo: ").append(conta.getSaldo()).append("<br/><br/>");
+					dadosConta.append("Saldo: R$").append(conta.getSaldo()).append("<br/><br/>");
 				}
 				dadosConta.append("</html>");
 				accountDataLabel.setText(dadosConta.toString());
@@ -197,6 +195,10 @@ public class TelaClientes extends JFrame {
 			userDataLabel.setText("");
 			accountDataLabel.setText("");
 		}
+	}
 
+	private void voltarTela() {
+		dispose();
+		new TelaPrincipal();
 	}
 }

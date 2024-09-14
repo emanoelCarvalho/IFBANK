@@ -32,16 +32,16 @@ public class TelaRegistro extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		this.labelNome = new JLabel("Nome: ");
-		this.labelNome.setBounds(390, 120, 120, 30); // Corrigi a posição
+		this.labelNome.setBounds(390, 120, 120, 30); 
 
 		this.inputNome = new JTextField();
-		this.inputNome.setBounds(430, 120, 120, 30); // Corrigi a posição
+		this.inputNome.setBounds(430, 120, 120, 30); 
 
 		this.labelCpf = new JLabel("Cpf: ");
-		this.labelCpf.setBounds(390, 160, 120, 30); // Corrigi a posição
+		this.labelCpf.setBounds(390, 160, 120, 30); 
 
 		this.inputCpf = new JTextField();
-		this.inputCpf.setBounds(430, 160, 120, 30); // Corrigi a posição
+		this.inputCpf.setBounds(430, 160, 120, 30);
 
 		setLayout(null);
 

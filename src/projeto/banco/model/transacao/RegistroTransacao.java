@@ -1,6 +1,7 @@
 package projeto.banco.model.transacao;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Random;
 
@@ -12,6 +13,16 @@ public class RegistroTransacao {
 	private BigDecimal valorTransacao;
 
 	public RegistroTransacao(long contaOrigem, long contaDestino, BigDecimal valorTransacao) {
+		super();
+		this.numero = new Random().nextInt(99999999);
+		this.contaOrigem = contaOrigem;
+		this.contaDestino = contaDestino;
+		this.dataTransacao = LocalDate.now();
+		this.valorTransacao = valorTransacao;
+	}
+
+	public RegistroTransacao(Integer numero, long contaOrigem, long contaDestino, Date dataTransacao2,
+			BigDecimal valorTransacao) {
 		super();
 		this.numero = new Random().nextInt(99999999);
 		this.contaOrigem = contaOrigem;

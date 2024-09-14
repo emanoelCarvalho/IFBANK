@@ -1,9 +1,16 @@
 package projeto.banco.model.gui;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import projeto.banco.dao.ClienteDAO;
 import projeto.banco.database.ConexaoMySql;
@@ -14,79 +21,95 @@ import projeto.banco.model.cliente.ICliente;
 public class TelaPrincipal extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	JLabel labelCpf;
-	JTextField inputCpf;
+	private JTextField inputCpf;
 
 	public TelaPrincipal() {
-		setTitle("IFBANK ");
+		setTitle("IFBANK");
 		setSize(1000, 500);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		this.labelCpf = new JLabel("CPF: ");
-		this.labelCpf.setBounds(400, 220, 120, 30);
-		this.inputCpf = new JTextField();
-		this.inputCpf.setBounds(430, 220, 120, 30);
+		// Layout setup
+		setLayout(new GridBagLayout());
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.insets = new Insets(10, 10, 10, 10);
+		constraints.anchor = GridBagConstraints.CENTER;
 
-		setLayout(null);
+		// CPF Label
+		JLabel labelCpf = new JLabel("CPF:");
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		add(labelCpf, constraints);
+
+		// CPF Input
+		inputCpf = new JTextField(15);
+		constraints.gridx = 1;
+		add(inputCpf, constraints);
+
+		// Login Button
 		JButton botaoLogar = new JButton("Entrar");
-		botaoLogar.setBounds(450, 300, 80, 30);
-		botaoLogar.addActionListener(e -> logar());
+		botaoLogar.addActionListener(this::logar);
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.gridwidth = 2;
+		add(botaoLogar, constraints);
 
+		// Register Button
 		JButton botaoRegistro = new JButton("Criar");
-		botaoRegistro.setBounds(450, 340, 80, 30);
-		botaoRegistro.addActionListener(e -> registrar());
+		botaoRegistro.addActionListener(this::registrar);
+		constraints.gridy = 2;
+		add(botaoRegistro, constraints);
 
+		// Clients Button
 		JButton botaoConsultaClientes = new JButton("Clientes");
-		botaoConsultaClientes.setBounds(600, 340, 80, 30);
-		botaoConsultaClientes.addActionListener(e -> consultarClientes());
+		botaoConsultaClientes.addActionListener(this::consultarClientes);
+		constraints.gridy = 3;
+		add(botaoConsultaClientes, constraints);
 
-		add(inputCpf);
-		add(labelCpf);
-		add(botaoLogar);
-		add(botaoRegistro);
-		add(botaoConsultaClientes);
 		setVisible(true);
 	}
 
-	public void logar() {
-		String cpf = inputCpf.getText();
+	private void logar(ActionEvent e) {
+		String cpf = inputCpf.getText().trim();
 
 		try {
-			if (cpf.isEmpty()) {
-				throw new CamposDeEntradaVaziosEx();
-			}
-
-			if (cpf.length() != 11) {
-				throw new CpfInvalidoCurtoEx();
-			}
+			validarCpf(cpf);
 
 			ClienteDAO cDAO = new ClienteDAO(new ConexaoMySql());
 			ICliente cliente = cDAO.logarConta(cpf);
 
-			if (cliente == null) {
-				return;
+			if (cliente != null) {
+				dispose();
+				new PainelConta(cliente);
+			} else {
+				JOptionPane.showMessageDialog(this, "Cliente não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
 			}
-			dispose();
-			new PainelConta(cliente);
-		} catch (CamposDeEntradaVaziosEx e2) {
-			// TODO: handle exception
-			e2.alert();
-		} catch (CpfInvalidoCurtoEx e2) {
-			// TODO: handle exception
-			e2.alert();
+		} catch (CamposDeEntradaVaziosEx | CpfInvalidoCurtoEx ex) {
+			((CamposDeEntradaVaziosEx) ex).alert();
 		}
 	}
 
-	public void registrar() {
+	private void validarCpf(String cpf) throws CamposDeEntradaVaziosEx, CpfInvalidoCurtoEx {
+		if (cpf.isEmpty()) {
+			throw new CamposDeEntradaVaziosEx();
+		}
+		if (cpf.length() != 11) {
+			throw new CpfInvalidoCurtoEx();
+		}
+	}
+
+	private void registrar(ActionEvent e) {
 		dispose();
 		new TelaRegistro();
 	}
 
-	public void consultarClientes() {
+	private void consultarClientes(ActionEvent e) {
 		dispose();
 		new TelaClientes();
 	}
 
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(TelaPrincipal::new);
+	}
 }

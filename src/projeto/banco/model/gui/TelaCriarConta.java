@@ -32,11 +32,11 @@ public class TelaCriarConta extends JFrame {
 
 		JButton botaoContaPoupanca = new JButton("Poupança");
 		botaoContaPoupanca.setBounds(120, 60, 150, 30);
-		botaoContaPoupanca.addActionListener(e -> adicionarContaPoupanca());
+		botaoContaPoupanca.addActionListener(this::adicionarContaPoupanca);
 
 		JButton botaoContaCorrente = new JButton("Corrente");
 		botaoContaCorrente.setBounds(120, 100, 150, 30);
-		botaoContaCorrente.addActionListener(e -> adicionarContaCorrente());
+		botaoContaCorrente.addActionListener(this::adicionarContaCorrente);
 
 		JButton botaoVoltar = new JButton("Voltar");
 		botaoVoltar.setBounds(120, 140, 150, 30);
@@ -63,19 +63,19 @@ public class TelaCriarConta extends JFrame {
 		new PainelConta(this.cliente);
 	}
 
-	public void adicionarContaCorrente() {
+	public void adicionarContaCorrente(ActionEvent e) {
 		IConta novaConta = new ContaCorrente(this.cliente.getCpf(), "corrente");
 		this.cliente.adicionarConta(novaConta);
 		this.cliente.carregarContas();
-		new PainelConta(this.cliente);
 		dispose();
+		new PainelConta(this.cliente);
 	}
 
-	public void adicionarContaPoupanca() {
+	public void adicionarContaPoupanca(ActionEvent e) {
 		IConta novaConta = new ContaPoupanca(this.cliente.getCpf(), "poupanca");
 		this.cliente.adicionarConta(novaConta);
 		this.cliente.carregarContas();
-		new PainelConta(this.cliente);
 		dispose();
+		new PainelConta(this.cliente);
 	}
 }

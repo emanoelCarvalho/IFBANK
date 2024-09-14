@@ -1,13 +1,21 @@
 package projeto.banco.model.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import projeto.banco.dao.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
@@ -15,9 +23,9 @@ import projeto.banco.exception.ContaTemSaldoEx;
 import projeto.banco.exception.SaldoNaContaEx;
 import projeto.banco.exception.TransferirMesmaContaEX;
 import projeto.banco.exception.ValorInvalidoEx;
-import projeto.banco.model.cliente.Cliente;
 import projeto.banco.model.cliente.ICliente;
 import projeto.banco.model.conta.IConta;
+import projeto.banco.model.transacao.RegistroTransacao;
 
 public class PainelConta extends JFrame {
 
@@ -33,89 +41,97 @@ public class PainelConta extends JFrame {
 	public PainelConta(ICliente cliente) {
 		this.cliente = cliente;
 		setTitle("Ações do banco");
-		setSize(1000, 500);
+		setSize(1500, 1000);
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLayout(null);
+		setLayout(new BorderLayout());
 
-		this.titulo = (new JLabel("Bem vindo " + this.cliente.getNome()));
-		this.titulo.setBounds(400, 50, 500, 30);
+		JPanel panelPrincipal = new JPanel();
+		panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
 
-		this.clienteCpf = (new JLabel("Bem vindo " + this.cliente.getCpf()));
-		this.clienteCpf.setBounds(400, 50, 500, 30);
+		this.titulo = new JLabel("Bem vindo " + this.cliente.getNome());
+		this.titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelPrincipal.add(this.titulo);
+
+		this.clienteCpf = new JLabel("Cpf: " + this.cliente.getCpf());
+		this.clienteCpf.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelPrincipal.add(this.clienteCpf);
 
 		int numeroContas = this.cliente.getContas().size();
-
-		if (numeroContas == 0 || numeroContas == 1) {
+		if (numeroContas == 0 || numeroContas == 1 || numeroContas == 2) {
 			JButton criarConta = new JButton("Criar conta");
-			criarConta.setBounds(400, 400, 150, 30);
+			criarConta.setAlignmentX(Component.CENTER_ALIGNMENT);
 			criarConta.addActionListener(this::adicionarConta);
+			panelPrincipal.add(criarConta);
 
 			if (numeroContas == 0) {
-				this.alert = new JLabel("Você ainda não possui contas!");
-				this.alert.setBounds(390, 300, 500, 30);
-
-				add(alert);
-				add(criarConta);
+				JLabel alert = new JLabel("Você ainda não possui contas!");
+				alert.setAlignmentX(Component.CENTER_ALIGNMENT);
+				panelPrincipal.add(alert);
 			}
 
-			if (numeroContas == 1) {
-				add(criarConta);
-			}
-
-			int labelX = 100;
 			for (IConta conta : this.cliente.getContas()) {
-				String saldoFormatado = formatarSaldo(conta.getSaldo());
+				JPanel painelConta = new JPanel();
+				painelConta.setLayout(new GridBagLayout());
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.insets = new Insets(10, 10, 10, 10);
 
+				gbc.gridx = 0;
+				gbc.gridy = 0;
 				JLabel contaLabel = new JLabel("Número da conta: " + conta.getNumero() + " - Tipo: " + conta.getTipo()
-						+ " - Saldo: R$" + saldoFormatado);
-				contaLabel.setBounds(labelX, 120, 700, 30);
-				add(contaLabel);
+						+ " - Saldo: R$" + formatarSaldo(conta.getSaldo()));
+				painelConta.add(contaLabel, gbc);
 
+				gbc.gridy++;
 				JButton botaoDepositar = new JButton("Depósito");
-				botaoDepositar.setBounds(labelX, 150, 100, 30);
 				botaoDepositar.addActionListener(e -> depositarConta(conta));
-				add(botaoDepositar);
+				painelConta.add(botaoDepositar, gbc);
 
+				gbc.gridy++;
 				JButton botaoTransferir = new JButton("Efetuar transferência");
-				botaoTransferir.setBounds(labelX + 110, 150, 160, 30);
 				botaoTransferir.addActionListener(e -> transferir(conta));
-				add(botaoTransferir);
+				painelConta.add(botaoTransferir, gbc);
 
+				gbc.gridy++;
 				JButton botaoSaque = new JButton("Realizar saque");
-				botaoSaque.setBounds(labelX, 190, 120, 30);
 				botaoSaque.addActionListener(e -> sacarConta(conta));
-				add(botaoSaque);
+				painelConta.add(botaoSaque, gbc);
 
+				gbc.gridy++;
 				JButton botaoRemover = new JButton("Remover conta");
-				botaoRemover.setBounds(labelX + 130, 190, 130, 30);
 				botaoRemover.addActionListener(e -> removerConta(conta));
-				add(botaoRemover);
+				painelConta.add(botaoRemover, gbc);
 
-				labelX += 400;
+				gbc.gridy++;
+				JButton botaoEmitirExtrato = new JButton("Emitir Extrato");
+				botaoEmitirExtrato.addActionListener(e -> emitirExtrato(conta));
+				painelConta.add(botaoEmitirExtrato, gbc);
 
-				JButton botaoVerSaldoTotalContas = new JButton("Mostrar total dos saldos");
-				botaoVerSaldoTotalContas.setBounds(380, 350, 200, 30);
-				botaoVerSaldoTotalContas.addActionListener(this::exibirSaldoTotal);
-				add(botaoVerSaldoTotalContas);
-
+				panelPrincipal.add(painelConta);
 			}
 
-			JButton sair = new JButton("Sair");
-			sair.setBounds(20, 20, 100, 30);
-			sair.addActionListener(this::sairConta);
-			add(sair);
-
-			JButton removeClienteButton = new JButton("Excluir conta");
-			removeClienteButton.setBounds(20, 400, 150, 30);
-			removeClienteButton.addActionListener(this::apagarCliente);
-			add(removeClienteButton);
-
-			setVisible(true);
-			add(titulo);
-			add(clienteCpf);
+			JButton botaoVerSaldoTotalContas = new JButton("Mostrar total dos saldos");
+			botaoVerSaldoTotalContas.setAlignmentX(Component.CENTER_ALIGNMENT);
+			botaoVerSaldoTotalContas.addActionListener(this::exibirSaldoTotal);
+			panelPrincipal.add(botaoVerSaldoTotalContas);
 		}
+
+		JButton sair = new JButton("Sair");
+		sair.addActionListener(this::sairConta);
+		JButton removeClienteButton = new JButton("Excluir conta");
+		removeClienteButton.addActionListener(this::apagarCliente);
+
+		JPanel panelBotoes = new JPanel();
+		panelBotoes.add(sair);
+		panelBotoes.add(removeClienteButton);
+
+		add(panelPrincipal, BorderLayout.CENTER);
+		add(panelBotoes, BorderLayout.SOUTH);
+
+		setVisible(true);
+	
+
 	}
 
 	private void adicionarConta(ActionEvent e) {
@@ -135,6 +151,7 @@ public class PainelConta extends JFrame {
 				if (confirmDelete == JOptionPane.YES_OPTION) {
 					this.cliente.removerConta(conta);
 					this.cliente.carregarContas();
+
 					dispose();
 					new PainelConta(this.cliente);
 				}
@@ -224,6 +241,41 @@ public class PainelConta extends JFrame {
 			} catch (ValorInvalidoEx e) {
 				// TODO: handle exception
 				e.alert();
+			}
+		}
+	}
+
+	private void emitirExtrato(IConta conta) {
+		// Solicita o mês e o ano para o extrato
+		String mesTexto = JOptionPane.showInputDialog(this, "Digite o mês (em número):");
+		String anoTexto = JOptionPane.showInputDialog(this, "Digite o ano:");
+
+		if (mesTexto != null && anoTexto != null) {
+			try {
+				int mes = Integer.parseInt(mesTexto);
+				int ano = Integer.parseInt(anoTexto);
+
+				// Verifica se o mês e o ano são válidos
+				if (mes < 1 || mes > 12 || ano < 1900) {
+					JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				// Obtém o extrato
+				List<RegistroTransacao> extrato = conta.emitirExtrato(conta.getNumero(), mes, ano);
+
+				// Mostra o extrato
+				StringBuilder extratoStr = new StringBuilder(
+						"Extrato da conta " + conta.getNumero() + " para " + mes + "/" + ano + ":\n");
+				for (RegistroTransacao transacao : extrato) {
+					extratoStr.append("Número: ").append(transacao.getNumero()).append(", ").append("Data: ")
+							.append(transacao.getDataTransacao()).append(", ").append("Valor: R$")
+							.append(transacao.getValorTransacao()).append("\n");
+				}
+				JOptionPane.showMessageDialog(this, extratoStr.toString(), "Extrato", JOptionPane.INFORMATION_MESSAGE);
+
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}

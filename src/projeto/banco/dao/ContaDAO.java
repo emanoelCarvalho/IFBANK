@@ -1,6 +1,7 @@
 package projeto.banco.dao;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +16,7 @@ import projeto.banco.model.conta.ContaCorrente;
 import projeto.banco.model.conta.ContaPoupanca;
 import projeto.banco.model.conta.IConta;
 import projeto.banco.model.transacao.RegistroTransacao;
+import projeto.banco.utils.TaxaUtils;
 
 public class ContaDAO {
 	private ConexaoMySql conn;
@@ -267,40 +269,58 @@ public class ContaDAO {
 
 	}
 
-	public void tranferir(BigDecimal quantia, int contaDestino, int contaOrigem) {
+	public void transferir(BigDecimal quantia, int contaDestino, int contaOrigem) {
 		String contaDebitaSql = "UPDATE CONTAS SET SALDO = SALDO - ? WHERE NUMERO = ?";
 		String contaDepositoSql = "UPDATE CONTAS SET SALDO = SALDO + ? WHERE NUMERO = ?";
-		String registroTransacao = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO,VALOR_TRANSACAO) VALUES (?,?,?,?,?)";
+		String registroTransacaoSql = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO) VALUES (?,?,?,?,?)";
 
 		PreparedStatement ppstContaDebita = null;
 		PreparedStatement ppstContaDeposito = null;
 		PreparedStatement ppstTransacao = null;
 
 		try {
+			ContaDAO contaDAO = new ContaDAO(this.conn);
+
+			String tipoContaOrigem = contaDAO.getTipo(contaOrigem);
+			String tipoContaDestino = contaDAO.getTipo(contaDestino);
+
+			if (tipoContaOrigem == null || tipoContaDestino == null) {
+				JOptionPane.showMessageDialog(null, "Uma ou ambas as contas não foram encontradas.", "Erro",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+			BigDecimal taxaADM = new BigDecimal(TaxaUtils.TAXA_ADMINISTRATIVA);
+			BigDecimal quantiaTaxada = quantia;
+
+			if (!tipoContaOrigem.equals(tipoContaDestino)) {
+				quantiaTaxada = quantia.multiply(BigDecimal.ONE.subtract(taxaADM));
+				JOptionPane.showMessageDialog(null, "Uma taxa administrativa de 2% foi aplicada à transferência.",
+						"Informativo", JOptionPane.INFORMATION_MESSAGE);
+			}
+
 			ppstContaDebita = this.conn.getConnection().prepareStatement(contaDebitaSql);
 			ppstContaDebita.setBigDecimal(1, quantia);
 			ppstContaDebita.setLong(2, contaOrigem);
 			ppstContaDebita.executeUpdate();
 
 			ppstContaDeposito = this.conn.getConnection().prepareStatement(contaDepositoSql);
-			ppstContaDeposito.setBigDecimal(1, quantia);
+			ppstContaDeposito.setBigDecimal(1, quantiaTaxada);
 			ppstContaDeposito.setLong(2, contaDestino);
 			ppstContaDeposito.executeUpdate();
 
-			RegistroTransacao transacao = new RegistroTransacao(contaOrigem, contaDestino, quantia);
-			ppstTransacao = this.conn.getConnection().prepareStatement(contaDepositoSql);
+			RegistroTransacao transacao = new RegistroTransacao(contaOrigem, contaDestino, quantiaTaxada);
+			ppstTransacao = this.conn.getConnection().prepareStatement(registroTransacaoSql);
 			ppstTransacao.setInt(1, transacao.getNumero());
 			ppstTransacao.setLong(2, contaOrigem);
 			ppstTransacao.setLong(3, contaDestino);
 			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacao.getDataTransacao()));
-			ppstTransacao.setBigDecimal(5, quantia);
+			ppstTransacao.setBigDecimal(5, quantiaTaxada);
 			ppstTransacao.executeUpdate();
 
 			JOptionPane.showMessageDialog(null, "Transferência realizada com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
-
 		} catch (SQLException e) {
-			// TODO: handle exception
 			JOptionPane.showMessageDialog(null, "Erro no servidor: " + e.getMessage(), "Erro",
 					JOptionPane.ERROR_MESSAGE);
 			try {
@@ -314,10 +334,8 @@ public class ContaDAO {
 				try {
 					ppstContaDebita.close();
 				} catch (SQLException e) {
-					// TODO: handle exception
 					JOptionPane.showMessageDialog(null, "Erro ao fechar o PreparedStatement: " + e.getMessage(), "Erro",
 							JOptionPane.ERROR_MESSAGE);
-
 				}
 			}
 
@@ -325,10 +343,8 @@ public class ContaDAO {
 				try {
 					ppstContaDeposito.close();
 				} catch (SQLException e) {
-					// TODO: handle exception
 					JOptionPane.showMessageDialog(null, "Erro ao fechar o PreparedStatement: " + e.getMessage(), "Erro",
 							JOptionPane.ERROR_MESSAGE);
-
 				}
 			}
 
@@ -336,19 +352,16 @@ public class ContaDAO {
 				try {
 					ppstTransacao.close();
 				} catch (SQLException e) {
-					// TODO: handle exception
 					JOptionPane.showMessageDialog(null, "Erro ao fechar o PreparedStatement: " + e.getMessage(), "Erro",
 							JOptionPane.ERROR_MESSAGE);
-
 				}
 			}
 			this.conn.closeConnection();
 		}
-
 	}
 
 	public List<IConta> resgatarContas(String cpf) {
-		String sql = "SELECT * FROM CONTAS WHERE CPF_CLIENTE";
+		String sql = "SELECT * FROM CONTAS WHERE CPF_CLIENTE = ?";
 		PreparedStatement ppst = null;
 		ResultSet rs = null;
 		List<IConta> contas = new ArrayList<>();
@@ -419,5 +432,60 @@ public class ContaDAO {
 			}
 		}
 		return false;
+	}
+
+	public List<RegistroTransacao> emitirExtrato(int mes, int ano, int numeroConta) {
+		List<RegistroTransacao> extrato = new ArrayList<>();
+		String sql = "SELECT * FROM REGISTROS_TRANSACOES "
+				+ "WHERE (NUMERO_CONTA_ORIGEM = ? OR NUMERO_CONTA_DESTINO = ?) "
+				+ "AND YEAR(DATA_TRANSACAO) = ? AND MONTH(DATA_TRANSACAO) = ?";
+
+		try {
+			PreparedStatement ppst = this.conn.getConnection().prepareStatement(sql);
+			ppst.setInt(1, numeroConta);
+			ppst.setInt(2, numeroConta);
+			ppst.setInt(3, ano);
+			ppst.setInt(4, mes);
+
+			try {
+				ResultSet rs = ppst.executeQuery();
+				while (rs.next()) {
+					int numero = rs.getInt("NUMERO");
+					int numeroContaOrigem = rs.getInt("NUMERO_CONTA_ORIGEM");
+					int numeroContaDestino = rs.getInt("NUMERO_CONTA_DESTINO");
+					Date dataTransacao = rs.getDate("DATA_TRANSACAO");
+					BigDecimal valorTransacao = rs.getBigDecimal("VALOR_TRANSACAO");
+
+					RegistroTransacao transacao = new RegistroTransacao(numero, numeroContaOrigem, numeroContaDestino,
+							dataTransacao, valorTransacao);
+					extrato.add(transacao);
+				}
+			} catch (SQLException e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		return extrato;
+	}
+
+	public String getTipo(int numeroConta) {
+		String tipoConta = null;
+		String sql = "SELECT TIPO FROM CONTAS WHERE NUMERO = ?";
+
+		try (PreparedStatement pst = this.conn.getConnection().prepareStatement(sql)) {
+			pst.setInt(1, numeroConta);
+			ResultSet rs = pst.executeQuery();
+			if (rs.next()) {
+				tipoConta = rs.getString("TIPO");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return tipoConta;
 	}
 }

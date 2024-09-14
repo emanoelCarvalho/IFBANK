@@ -31,6 +31,7 @@ public class ClienteDAO {
 			ppst.setString(2, cliente.getNome());
 
 			ppst.executeUpdate();
+			return true;
 		} catch (SQLException e) {
 			// TODO: handle exception
 			throw new RuntimeException("Erro no servidor: " + e.getMessage(), e);
@@ -43,8 +44,9 @@ public class ClienteDAO {
 					JOptionPane.showMessageDialog(null, "Erro ao fechar ppst: " + e2.getMessage());
 				}
 			}
+			this.conn.closeConnection();
 		}
-		return false;
+
 	}
 
 	public ICliente buscarClientePorCpf(String cpf) {
@@ -89,6 +91,7 @@ public class ClienteDAO {
 				}
 			}
 		}
+		this.conn.closeConnection();
 		return dados;
 	}
 
@@ -134,8 +137,9 @@ public class ClienteDAO {
 							"Erro", JOptionPane.ERROR_MESSAGE);
 				}
 			}
+			this.conn.closeConnection();
 		}
-		return true;
+		return false;
 	}
 
 	public ICliente logarConta(String cpf) {
@@ -190,6 +194,7 @@ public class ClienteDAO {
 							"Erro", JOptionPane.ERROR_MESSAGE);
 				}
 			}
+			this.conn.closeConnection();
 		}
 	}
 
@@ -229,7 +234,7 @@ public class ClienteDAO {
 				}
 			}
 		}
-
+		this.conn.closeConnection();
 		return listaClientes;
 	}
 

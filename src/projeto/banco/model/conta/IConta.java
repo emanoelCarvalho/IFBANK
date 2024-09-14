@@ -1,6 +1,9 @@
 package projeto.banco.model.conta;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import projeto.banco.model.transacao.RegistroTransacao;
 
 public interface IConta {
 	public Integer getNumero();
@@ -30,4 +33,6 @@ public interface IConta {
 	public Boolean sacar(BigDecimal quantia);
 
 	public Boolean transferir(BigDecimal quantia, int contaDestino);
+
+	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano);
 }

@@ -3,11 +3,13 @@ package projeto.banco.model.conta;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
 import projeto.banco.dao.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
+import projeto.banco.model.transacao.RegistroTransacao;
 
 public class ContaPoupanca implements IConta, Serializable {
 
@@ -150,7 +152,14 @@ public class ContaPoupanca implements IConta, Serializable {
 	@Override
 	public Boolean transferir(BigDecimal quantia, int contaDestino) {
 		ContaDAO cDao = new ContaDAO(new ConexaoMySql());
-		cDao.tranferir(quantia, contaDestino, this.getNumero());
+		cDao.transferir(quantia, contaDestino, this.getNumero());
+		return null;
+	}
+
+	@Override
+	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano) {
+		ContaDAO cDAO = new ContaDAO(new ConexaoMySql());
+		cDAO.emitirExtrato(numeroConta, mes, ano);
 		return null;
 	}
 }
