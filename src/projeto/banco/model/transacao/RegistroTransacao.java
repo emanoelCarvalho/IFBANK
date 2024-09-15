@@ -5,30 +5,45 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Random;
 
+import projeto.banco.model.transacao.enumarator.TipoTransacao;
+
 public class RegistroTransacao {
 	private Integer numero;
 	private long contaOrigem;
 	private long contaDestino;
 	private LocalDate dataTransacao;
 	private BigDecimal valorTransacao;
+	private TipoTransacao tipoTransacao;
 
-	public RegistroTransacao(long contaOrigem, long contaDestino, BigDecimal valorTransacao) {
+	public RegistroTransacao(long contaOrigem, long contaDestino, BigDecimal valorTransacao,
+			TipoTransacao tipoTransacao) {
 		super();
 		this.numero = new Random().nextInt(99999999);
 		this.contaOrigem = contaOrigem;
 		this.contaDestino = contaDestino;
 		this.dataTransacao = LocalDate.now();
 		this.valorTransacao = valorTransacao;
+		this.tipoTransacao = tipoTransacao;
+	}
+
+	public TipoTransacao getTipoTransacao() {
+		return tipoTransacao;
+	}
+
+	public void setTipoTransacao(TipoTransacao tipoTransacao) {
+		this.tipoTransacao = tipoTransacao;
 	}
 
 	public RegistroTransacao(Integer numero, long contaOrigem, long contaDestino, Date dataTransacao2,
-			BigDecimal valorTransacao) {
+			BigDecimal valorTransacao, TipoTransacao tipoTransacao) {
 		super();
 		this.numero = new Random().nextInt(99999999);
 		this.contaOrigem = contaOrigem;
 		this.contaDestino = contaDestino;
 		this.dataTransacao = LocalDate.now();
 		this.valorTransacao = valorTransacao;
+		this.tipoTransacao = tipoTransacao;
+
 	}
 
 	public Integer getNumero() {

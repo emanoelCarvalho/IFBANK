@@ -16,6 +16,7 @@ import projeto.banco.model.conta.ContaCorrente;
 import projeto.banco.model.conta.ContaPoupanca;
 import projeto.banco.model.conta.IConta;
 import projeto.banco.model.transacao.RegistroTransacao;
+import projeto.banco.model.transacao.enumarator.TipoTransacao;
 import projeto.banco.utils.TaxaUtils;
 
 public class ContaDAO {
@@ -208,13 +209,28 @@ public class ContaDAO {
 
 	public Boolean depositarConta(int numeroConta, BigDecimal quantia) {
 		String sql = "UPDATE CONTAS SET SALDO = SALDO + ? WHERE NUMERO = ?";
+		String sqlTransacao = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO, TIPO_TRANSACAO) VALUES (?,?,?,?,?,?)";
+
 		PreparedStatement ppst = null;
+		PreparedStatement ppstTransacao = null;
 
 		try {
 			ppst = this.conn.getConnection().prepareStatement(sql);
 			ppst.setBigDecimal(1, quantia);
 			ppst.setLong(2, numeroConta);
 			ppst.executeUpdate();
+
+			RegistroTransacao transacao = new RegistroTransacao(numeroConta, numeroConta, quantia,
+					TipoTransacao.CREDITO);
+			ppstTransacao = this.conn.getConnection().prepareStatement(sqlTransacao);
+			ppstTransacao.setInt(1, transacao.getNumero());
+			ppstTransacao.setLong(2, transacao.getContaOrigem());
+			ppstTransacao.setLong(3, transacao.getContaDestino());
+			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacao.getDataTransacao()));
+			ppstTransacao.setBigDecimal(5, transacao.getValorTransacao());
+			ppstTransacao.setInt(6, transacao.getTipoTransacao().getValor());
+			ppstTransacao.executeUpdate();
+
 			JOptionPane.showMessageDialog(null, "Depósito realizado com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
 			return true;
@@ -239,13 +255,28 @@ public class ContaDAO {
 
 	public Boolean sacar(int numeroConta, BigDecimal quantia) {
 		String sql = "UPDATE CONTAS SET SALDO = SALDO - ? WHERE NUMERO = ?";
+		String sqlTransacao = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO, TIPO_TRANSACAO) VALUES (?,?,?,?,?,?)";
+
 		PreparedStatement ppst = null;
+		PreparedStatement ppstTransacao = null;
 
 		try {
 			ppst = this.conn.getConnection().prepareStatement(sql);
 			ppst.setBigDecimal(1, quantia);
 			ppst.setLong(2, numeroConta);
 			ppst.executeUpdate();
+
+			RegistroTransacao transacao = new RegistroTransacao(numeroConta, numeroConta, quantia,
+					TipoTransacao.DEBITO);
+			ppstTransacao = this.conn.getConnection().prepareStatement(sqlTransacao);
+			ppstTransacao.setInt(1, transacao.getNumero());
+			ppstTransacao.setLong(2, transacao.getContaOrigem());
+			ppstTransacao.setLong(3, transacao.getContaDestino());
+			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacao.getDataTransacao()));
+			ppstTransacao.setBigDecimal(5, transacao.getValorTransacao());
+			ppstTransacao.setInt(6, transacao.getTipoTransacao().getValor());
+			ppstTransacao.executeUpdate();
+
 			JOptionPane.showMessageDialog(null, "Saque realizado com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
 			return true;
@@ -272,7 +303,7 @@ public class ContaDAO {
 	public void transferir(BigDecimal quantia, int contaDestino, int contaOrigem) {
 		String contaDebitaSql = "UPDATE CONTAS SET SALDO = SALDO - ? WHERE NUMERO = ?";
 		String contaDepositoSql = "UPDATE CONTAS SET SALDO = SALDO + ? WHERE NUMERO = ?";
-		String registroTransacaoSql = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO) VALUES (?,?,?,?,?)";
+		String registroTransacaoSql = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO, TIPO_TRANSACAO) VALUES (?,?,?,?,?,?)";
 
 		PreparedStatement ppstContaDebita = null;
 		PreparedStatement ppstContaDeposito = null;
@@ -309,13 +340,26 @@ public class ContaDAO {
 			ppstContaDeposito.setLong(2, contaDestino);
 			ppstContaDeposito.executeUpdate();
 
-			RegistroTransacao transacao = new RegistroTransacao(contaOrigem, contaDestino, quantiaTaxada);
+			RegistroTransacao transacaoOrigem = new RegistroTransacao(contaOrigem, contaDestino, quantia,
+					TipoTransacao.TRANSACAO_DEBITO);
 			ppstTransacao = this.conn.getConnection().prepareStatement(registroTransacaoSql);
-			ppstTransacao.setInt(1, transacao.getNumero());
-			ppstTransacao.setLong(2, contaOrigem);
-			ppstTransacao.setLong(3, contaDestino);
-			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacao.getDataTransacao()));
-			ppstTransacao.setBigDecimal(5, quantiaTaxada);
+			ppstTransacao.setInt(1, transacaoOrigem.getNumero());
+			ppstTransacao.setLong(2, transacaoOrigem.getContaOrigem());
+			ppstTransacao.setLong(3, transacaoOrigem.getContaDestino());
+			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacaoOrigem.getDataTransacao()));
+			ppstTransacao.setBigDecimal(5, transacaoOrigem.getValorTransacao());
+			ppstTransacao.setInt(6, transacaoOrigem.getTipoTransacao().getValor());
+			ppstTransacao.executeUpdate();
+
+			RegistroTransacao transacaoDestino = new RegistroTransacao(contaDestino, contaOrigem, quantiaTaxada,
+					TipoTransacao.TRANSACAO_CREDITO);
+			ppstTransacao = this.conn.getConnection().prepareStatement(registroTransacaoSql);
+			ppstTransacao.setInt(1, transacaoDestino.getNumero());
+			ppstTransacao.setLong(2, transacaoDestino.getContaOrigem());
+			ppstTransacao.setLong(3, transacaoDestino.getContaDestino());
+			ppstTransacao.setDate(4, java.sql.Date.valueOf(transacaoDestino.getDataTransacao()));
+			ppstTransacao.setBigDecimal(5, transacaoDestino.getValorTransacao());
+			ppstTransacao.setInt(6, transacaoDestino.getTipoTransacao().getValor());
 			ppstTransacao.executeUpdate();
 
 			JOptionPane.showMessageDialog(null, "Transferência realizada com sucesso!", "Sucesso",
