@@ -159,7 +159,7 @@ public class ContaPoupanca implements IConta, Serializable {
 	@Override
 	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano) {
 		ContaDAO cDAO = new ContaDAO(new ConexaoMySql());
-		cDAO.emitirExtrato(numeroConta, mes, ano);
-		return null;
+		List<RegistroTransacao> extrato = cDAO.emitirExtrato(numeroConta, mes, ano);
+		return extrato;
 	}
 }

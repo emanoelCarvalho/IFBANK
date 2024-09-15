@@ -130,7 +130,6 @@ public class PainelConta extends JFrame {
 		add(panelBotoes, BorderLayout.SOUTH);
 
 		setVisible(true);
-	
 
 	}
 
@@ -246,39 +245,39 @@ public class PainelConta extends JFrame {
 	}
 
 	private void emitirExtrato(IConta conta) {
-		// Solicita o mês e o ano para o extrato
-		String mesTexto = JOptionPane.showInputDialog(this, "Digite o mês (em número):");
-		String anoTexto = JOptionPane.showInputDialog(this, "Digite o ano:");
+	    String mesTexto = JOptionPane.showInputDialog(this, "Digite o mês (em número):");
+	    String anoTexto = JOptionPane.showInputDialog(this, "Digite o ano:");
 
-		if (mesTexto != null && anoTexto != null) {
-			try {
-				int mes = Integer.parseInt(mesTexto);
-				int ano = Integer.parseInt(anoTexto);
+	    if (mesTexto != null && anoTexto != null) {
+	        try {
+	            int mes = Integer.parseInt(mesTexto);
+	            int ano = Integer.parseInt(anoTexto);
 
-				// Verifica se o mês e o ano são válidos
-				if (mes < 1 || mes > 12 || ano < 1900) {
-					JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
+	            if (mes < 1 || mes > 12 || ano < 1900) {
+	                JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+	                return;
+	            }
+	            
+	            int numeroConta = conta.getNumero();
 
-				// Obtém o extrato
-				List<RegistroTransacao> extrato = conta.emitirExtrato(conta.getNumero(), mes, ano);
+	            List<RegistroTransacao> extrato = conta.emitirExtrato(numeroConta,mes, ano);
 
-				// Mostra o extrato
-				StringBuilder extratoStr = new StringBuilder(
-						"Extrato da conta " + conta.getNumero() + " para " + mes + "/" + ano + ":\n");
-				for (RegistroTransacao transacao : extrato) {
-					extratoStr.append("Número: ").append(transacao.getNumero()).append(", ").append("Data: ")
-							.append(transacao.getDataTransacao()).append(", ").append("Valor: R$")
-							.append(transacao.getValorTransacao()).append("\n");
-				}
-				JOptionPane.showMessageDialog(this, extratoStr.toString(), "Extrato", JOptionPane.INFORMATION_MESSAGE);
+	            StringBuilder extratoStr = new StringBuilder(
+	                    "Extrato da conta " + conta.getNumero() + " para " + mes + "/" + ano + ":\n");
+	            for (RegistroTransacao transacao : extrato) {
+	                extratoStr.append("Número: ").append(transacao.getNumero()).append(", ")
+	                          .append("Data: ").append(transacao.getDataTransacao()).append(", ")
+	                          .append("Valor: R$").append(transacao.getValorTransacao()).append(", ")
+	                          .append("Tipo: ").append(transacao.getTipoTransacao()).append("\n");
+	            }
+	            JOptionPane.showMessageDialog(this, extratoStr.toString(), "Extrato", JOptionPane.INFORMATION_MESSAGE);
 
-			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-			}
-		}
+	        } catch (NumberFormatException e) {
+	            JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+	        }
+	    }
 	}
+
 
 	private void transferir(IConta conta) {
 		// TODO Auto-generated method stub

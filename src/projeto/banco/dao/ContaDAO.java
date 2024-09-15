@@ -478,7 +478,7 @@ public class ContaDAO {
 		return false;
 	}
 
-	public List<RegistroTransacao> emitirExtrato(int mes, int ano, int numeroConta) {
+	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano) {
 		List<RegistroTransacao> extrato = new ArrayList<>();
 		String sql = "SELECT * FROM REGISTROS_TRANSACOES "
 				+ "WHERE (NUMERO_CONTA_ORIGEM = ? OR NUMERO_CONTA_DESTINO = ?) "
@@ -491,26 +491,21 @@ public class ContaDAO {
 			ppst.setInt(3, ano);
 			ppst.setInt(4, mes);
 
-			try {
-				ResultSet rs = ppst.executeQuery();
-				while (rs.next()) {
-					int numero = rs.getInt("NUMERO");
-					int numeroContaOrigem = rs.getInt("NUMERO_CONTA_ORIGEM");
-					int numeroContaDestino = rs.getInt("NUMERO_CONTA_DESTINO");
-					Date dataTransacao = rs.getDate("DATA_TRANSACAO");
-					BigDecimal valorTransacao = rs.getBigDecimal("VALOR_TRANSACAO");
+			ResultSet rs = ppst.executeQuery();
+			while (rs.next()) {
+				int numero = rs.getInt("NUMERO");
+				int numeroContaOrigem = rs.getInt("NUMERO_CONTA_ORIGEM");
+				int numeroContaDestino = rs.getInt("NUMERO_CONTA_DESTINO");
+				Date dataTransacao = rs.getDate("DATA_TRANSACAO");
+				BigDecimal valorTransacao = rs.getBigDecimal("VALOR_TRANSACAO");
+				String tipoTransacaoStr = rs.getString("TIPO_TRANSACAO");
+				TipoTransacao tipoTransacao = TipoTransacao.valueOf(tipoTransacaoStr);
 
-					RegistroTransacao transacao = new RegistroTransacao(numero, numeroContaOrigem, numeroContaDestino,
-							dataTransacao, valorTransacao);
-					extrato.add(transacao);
-				}
-			} catch (SQLException e) {
-				// TODO: handle exception
-				e.printStackTrace();
+				RegistroTransacao transacao = new RegistroTransacao(numero, numeroContaOrigem, numeroContaDestino,
+						dataTransacao, valorTransacao, tipoTransacao);
+				extrato.add(transacao);
 			}
-
 		} catch (SQLException e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return extrato;
