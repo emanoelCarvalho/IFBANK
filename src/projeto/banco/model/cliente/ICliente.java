@@ -6,22 +6,22 @@ import java.util.List;
 import projeto.banco.model.conta.IConta;
 
 public interface ICliente {
-	public String getCpf();
+	 String getCpf();
 
-	public void setCpf(String cpf);
+	 void setCpf(String cpf);
 
-	public String getNome();
+	 String getNome();
 
-	public void setNome(String nome);
+	 void setNome(String nome);
 
-	public List<IConta> getContas();
+	 List<IConta> getContas();
 
-	public void carregarContas();
+	 void carregarContas();
 
-	public void adicionarConta(IConta conta);
+	 void adicionarConta(IConta conta);
 
-	public void removerConta(IConta conta);
+	 void removerConta(IConta conta);
 
-	public BigDecimal balancoEntreContas();
+	 BigDecimal balancoEntreContas();
 
 }

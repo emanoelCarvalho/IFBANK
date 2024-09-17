@@ -361,6 +361,7 @@ public class ContaDAO {
 			ppstTransacao.setBigDecimal(5, transacaoDestino.getValorTransacao());
 			ppstTransacao.setInt(6, transacaoDestino.getTipoTransacao().getValor());
 			ppstTransacao.executeUpdate();
+			
 
 			JOptionPane.showMessageDialog(null, "Transferência realizada com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -400,6 +401,16 @@ public class ContaDAO {
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
+
+			if (ppstTransacao != null) {
+				try {
+					ppstTransacao.close();
+				} catch (SQLException e) {
+					JOptionPane.showMessageDialog(null, "Erro ao fechar o PreparedStatement: " + e.getMessage(), "Erro",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+
 			this.conn.closeConnection();
 		}
 	}
