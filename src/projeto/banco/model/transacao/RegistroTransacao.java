@@ -9,13 +9,13 @@ import projeto.banco.model.transacao.enumarator.TipoTransacao;
 
 public class RegistroTransacao {
 	private Integer numero;
-	private long contaOrigem;
-	private long contaDestino;
+	private Integer contaOrigem;
+	private Integer contaDestino;
 	private LocalDate dataTransacao;
 	private BigDecimal valorTransacao;
 	private TipoTransacao tipoTransacao;
 
-	public RegistroTransacao(long contaOrigem, long contaDestino, BigDecimal valorTransacao,
+	public RegistroTransacao(Integer contaOrigem, Integer contaDestino, BigDecimal valorTransacao,
 			TipoTransacao tipoTransacao) {
 		super();
 		this.numero = new Random().nextInt(99999999);
@@ -34,7 +34,7 @@ public class RegistroTransacao {
 		this.tipoTransacao = tipoTransacao;
 	}
 
-	public RegistroTransacao(Integer numero, long contaOrigem, long contaDestino, Date dataTransacao2,
+	public RegistroTransacao(Integer numero, Integer contaOrigem, Integer contaDestino, Date dataTransacao2,
 			BigDecimal valorTransacao, TipoTransacao tipoTransacao) {
 		super();
 		this.numero = new Random().nextInt(99999999);
@@ -58,7 +58,7 @@ public class RegistroTransacao {
 		return contaOrigem;
 	}
 
-	public void setContaOrigem(long contaOrigem) {
+	public void setContaOrigem(Integer contaOrigem) {
 		this.contaOrigem = contaOrigem;
 	}
 
@@ -66,7 +66,7 @@ public class RegistroTransacao {
 		return contaDestino;
 	}
 
-	public void setContaDestino(long contaDestino) {
+	public void setContaDestino(Integer contaDestino) {
 		this.contaDestino = contaDestino;
 	}
 

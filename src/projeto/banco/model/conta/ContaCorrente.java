@@ -2,12 +2,11 @@ package projeto.banco.model.conta;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-import projeto.banco.dao.ContaDAO;
+import projeto.banco.dao.conta.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.model.transacao.RegistroTransacao;
 
@@ -25,7 +24,6 @@ public class ContaCorrente implements IConta, Serializable {
 		this.numero = new Random().nextInt(999999999);
 		this.tipo = tipo;
 		this.saldo = BigDecimal.ZERO;
-		saldo.setScale(4, RoundingMode.HALF_UP);
 		this.cpfTitular = cpfTitular;
 		this.status = true;
 	}
@@ -113,6 +111,7 @@ public class ContaCorrente implements IConta, Serializable {
 		this.status = status;
 	}
 
+	@Override
 	public void setDetalhesConta(Integer numero, String tipo, BigDecimal saldo, String cpfTitular, Boolean status) {
 		setNumero(numero);
 		setTipo(tipo);
@@ -149,6 +148,10 @@ public class ContaCorrente implements IConta, Serializable {
 
 	@Override
 	public Boolean transferir(BigDecimal quantia, int contaDestino) {
+		if (!status) {
+			return false;
+		}
+
 		ContaDAO cDao = new ContaDAO(new ConexaoMySql());
 		cDao.transferir(quantia, contaDestino, this.getNumero());
 		return null;

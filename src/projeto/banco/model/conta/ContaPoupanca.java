@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-import projeto.banco.dao.ContaDAO;
+import projeto.banco.dao.conta.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.model.transacao.RegistroTransacao;
 

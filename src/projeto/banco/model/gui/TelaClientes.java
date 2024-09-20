@@ -23,7 +23,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import projeto.banco.dao.ClienteDAO;
+import projeto.banco.dao.cliente.ClienteDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.model.cliente.ICliente;
 import projeto.banco.model.conta.IConta;

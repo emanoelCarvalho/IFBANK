@@ -6,7 +6,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import projeto.banco.dao.ClienteDAO;
+import projeto.banco.dao.cliente.ClienteDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.exception.CamposDeEntradaVaziosEx;
 import projeto.banco.exception.CpfExistenteEx;
@@ -84,7 +84,7 @@ public class TelaRegistro extends JFrame {
 					ICliente cliente = new Cliente(cpfCliente, nomeCliente);
 					cDAO.adicionarCliente(cliente);
 					dispose();
-					new PainelConta(cliente);
+					new TelaConta(cliente);
 				}
 			}
 		} catch (CpfExistenteEx e) {

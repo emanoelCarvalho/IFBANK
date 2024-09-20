@@ -1,4 +1,4 @@
-package projeto.banco.dao;
+package projeto.banco.dao.conta;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -19,13 +19,14 @@ import projeto.banco.model.transacao.RegistroTransacao;
 import projeto.banco.model.transacao.enumarator.TipoTransacao;
 import projeto.banco.utils.TaxaUtils;
 
-public class ContaDAO {
+public class ContaDAO implements IContaDAO {
 	private ConexaoMySql conn;
 
 	public ContaDAO(ConexaoMySql conn) {
 		this.conn = conn;
 	}
 
+	@Override
 	public void adicionarConta(IConta conta, String cpf) {
 		List<IConta> contasExistentes = resgatarContas(cpf);
 
@@ -72,6 +73,7 @@ public class ContaDAO {
 
 	}
 
+	@Override
 	public List<IConta> removerConta(IConta conta, ICliente cliente) {
 		String sql = "DELETE FROM CONTAS WHERE NUMERO = ?";
 		PreparedStatement ppst = null;
@@ -106,6 +108,7 @@ public class ContaDAO {
 		return contas;
 	}
 
+	@Override
 	public boolean buscarContaNumero(int numeroConta) {
 		String sql = "SELECT COUNT(*) FROM CONTAS WHERE NUMERO = ?";
 		PreparedStatement ppst = null;
@@ -150,6 +153,7 @@ public class ContaDAO {
 		return false;
 	}
 
+	@Override
 	public void apagarCliente(String cpf) {
 		List<IConta> contasUsuario = resgatarContas(cpf);
 
@@ -207,6 +211,7 @@ public class ContaDAO {
 		}
 	}
 
+	@Override
 	public Boolean depositarConta(int numeroConta, BigDecimal quantia) {
 		String sql = "UPDATE CONTAS SET SALDO = SALDO + ? WHERE NUMERO = ?";
 		String sqlTransacao = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO, TIPO_TRANSACAO) VALUES (?,?,?,?,?,?)";
@@ -253,6 +258,7 @@ public class ContaDAO {
 		}
 	}
 
+	@Override
 	public Boolean sacar(int numeroConta, BigDecimal quantia) {
 		String sql = "UPDATE CONTAS SET SALDO = SALDO - ? WHERE NUMERO = ?";
 		String sqlTransacao = "INSERT INTO REGISTROS_TRANSACOES (NUMERO, NUMERO_CONTA_ORIGEM, NUMERO_CONTA_DESTINO, DATA_TRANSACAO, VALOR_TRANSACAO, TIPO_TRANSACAO) VALUES (?,?,?,?,?,?)";
@@ -300,6 +306,7 @@ public class ContaDAO {
 
 	}
 
+	@Override
 	public void transferir(BigDecimal quantia, int contaDestino, int contaOrigem) {
 		String contaDebitaSql = "UPDATE CONTAS SET SALDO = SALDO - ? WHERE NUMERO = ?";
 		String contaDepositoSql = "UPDATE CONTAS SET SALDO = SALDO + ? WHERE NUMERO = ?";
@@ -353,7 +360,6 @@ public class ContaDAO {
 
 			RegistroTransacao transacaoDestino = new RegistroTransacao(contaDestino, contaOrigem, quantiaTaxada,
 					TipoTransacao.TRANSACAO_CREDITO);
-			ppstTransacao = this.conn.getConnection().prepareStatement(registroTransacaoSql);
 			ppstTransacao.setInt(1, transacaoDestino.getNumero());
 			ppstTransacao.setLong(2, transacaoDestino.getContaOrigem());
 			ppstTransacao.setLong(3, transacaoDestino.getContaDestino());
@@ -361,7 +367,6 @@ public class ContaDAO {
 			ppstTransacao.setBigDecimal(5, transacaoDestino.getValorTransacao());
 			ppstTransacao.setInt(6, transacaoDestino.getTipoTransacao().getValor());
 			ppstTransacao.executeUpdate();
-			
 
 			JOptionPane.showMessageDialog(null, "Transferência realizada com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
@@ -415,6 +420,7 @@ public class ContaDAO {
 		}
 	}
 
+	@Override
 	public List<IConta> resgatarContas(String cpf) {
 		String sql = "SELECT * FROM CONTAS WHERE CPF_CLIENTE = ?";
 		PreparedStatement ppst = null;
@@ -478,6 +484,7 @@ public class ContaDAO {
 		return contas;
 	}
 
+	@Override
 	public boolean balancoEntreContas(String cpf) {
 		List<IConta> contas = resgatarContas(cpf);
 
@@ -489,6 +496,7 @@ public class ContaDAO {
 		return false;
 	}
 
+	@Override
 	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano) {
 		List<RegistroTransacao> extrato = new ArrayList<>();
 		String sql = "SELECT * FROM REGISTROS_TRANSACOES "
@@ -522,6 +530,7 @@ public class ContaDAO {
 		return extrato;
 	}
 
+	@Override
 	public String getTipo(int numeroConta) {
 		String tipoConta = null;
 		String sql = "SELECT TIPO FROM CONTAS WHERE NUMERO = ?";

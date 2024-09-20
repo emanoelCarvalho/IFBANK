@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import projeto.banco.dao.ContaDAO;
+import projeto.banco.dao.conta.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.exception.ContaTemSaldoEx;
 import projeto.banco.exception.SaldoNaContaEx;
@@ -27,7 +27,7 @@ import projeto.banco.model.cliente.ICliente;
 import projeto.banco.model.conta.IConta;
 import projeto.banco.model.transacao.RegistroTransacao;
 
-public class PainelConta extends JFrame {
+public class TelaConta extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
@@ -38,7 +38,7 @@ public class PainelConta extends JFrame {
 	JLabel clienteCpf;
 	JLabel balancoEntreContas;
 
-	public PainelConta(ICliente cliente) {
+	public TelaConta(ICliente cliente) {
 		this.cliente = cliente;
 		setTitle("Ações do banco");
 		setSize(1500, 1000);
@@ -152,7 +152,7 @@ public class PainelConta extends JFrame {
 					this.cliente.carregarContas();
 
 					dispose();
-					new PainelConta(this.cliente);
+					new TelaConta(this.cliente);
 				}
 			}
 		} catch (SaldoNaContaEx e) {
@@ -205,7 +205,7 @@ public class PainelConta extends JFrame {
 					conta.sacar(valorSaque);
 					this.cliente.carregarContas();
 					dispose();
-					new PainelConta(this.cliente);
+					new TelaConta(this.cliente);
 				}
 
 			} catch (NumberFormatException e) {
@@ -232,7 +232,7 @@ public class PainelConta extends JFrame {
 					conta.depositar(valorDeposito);
 					this.cliente.carregarContas();
 					dispose();
-					new PainelConta(this.cliente);
+					new TelaConta(this.cliente);
 				}
 			} catch (NumberFormatException e) {
 				// TODO: handle exception
@@ -245,39 +245,40 @@ public class PainelConta extends JFrame {
 	}
 
 	private void emitirExtrato(IConta conta) {
-	    String mesTexto = JOptionPane.showInputDialog(this, "Digite o mês (em número):");
-	    String anoTexto = JOptionPane.showInputDialog(this, "Digite o ano:");
+		String mesTexto = JOptionPane.showInputDialog(this, "Digite o mês (em número):");
+		String anoTexto = JOptionPane.showInputDialog(this, "Digite o ano:");
 
-	    if (mesTexto != null && anoTexto != null) {
-	        try {
-	            int mes = Integer.parseInt(mesTexto);
-	            int ano = Integer.parseInt(anoTexto);
+		if (mesTexto != null && anoTexto != null) {
+			try {
+				int mes = Integer.parseInt(mesTexto);
+				int ano = Integer.parseInt(anoTexto);
 
-	            if (mes < 1 || mes > 12 || ano < 1900) {
-	                JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-	                return;
-	            }
-	            
-	            int numeroConta = conta.getNumero();
+				if (mes < 1 || mes > 12 || ano < 1900) {
+					JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 
-	            List<RegistroTransacao> extrato = conta.emitirExtrato(numeroConta,mes, ano);
+				int numeroConta = conta.getNumero();
 
-	            StringBuilder extratoStr = new StringBuilder(
-	                    "Extrato da conta " + conta.getNumero() + " para " + mes + "/" + ano + ":\n");
-	            for (RegistroTransacao transacao : extrato) {
-	                extratoStr.append("Número: ").append(transacao.getNumero()).append(", ")
-	                          .append("Data: ").append(transacao.getDataTransacao()).append(", ")
-	                          .append("Valor: R$").append(transacao.getValorTransacao()).append(", ")
-	                          .append("Tipo: ").append(transacao.getTipoTransacao()).append("\n");
-	            }
-	            JOptionPane.showMessageDialog(this, extratoStr.toString(), "Extrato", JOptionPane.INFORMATION_MESSAGE);
+				List<RegistroTransacao> extrato = conta.emitirExtrato(numeroConta, mes, ano);
 
-	        } catch (NumberFormatException e) {
-	            JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-	        }
-	    }
+				StringBuilder extratoStr = new StringBuilder(
+						"Extrato da conta " + conta.getNumero() + " para " + mes + "/" + ano + ":\n");
+				for (RegistroTransacao transacao : extrato) {
+					extratoStr.append("Número da Transação: ").append(transacao.getNumero()).append(", ")
+							.append("Data: ").append(transacao.getDataTransacao()).append(", ")
+							.append("Conta de Origem: ").append(transacao.getContaOrigem()).append(", ")
+							.append("Conta de Destino: ").append(transacao.getContaDestino()).append(", ")
+							.append("Valor: R$").append(transacao.getValorTransacao()).append(", ").append("Tipo: ")
+							.append(transacao.getTipoTransacao()).append("\n");
+				}
+				JOptionPane.showMessageDialog(this, extratoStr.toString(), "Extrato", JOptionPane.INFORMATION_MESSAGE);
+
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this, "Mês ou ano inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
-
 
 	private void transferir(IConta conta) {
 		// TODO Auto-generated method stub
@@ -303,7 +304,7 @@ public class PainelConta extends JFrame {
 									conta.transferir(valorTransfer, numeroContaDestino);
 									this.cliente.carregarContas();
 									dispose();
-									new PainelConta(this.cliente);
+									new TelaConta(this.cliente);
 								}
 							} catch (NumberFormatException e) {
 								JOptionPane.showMessageDialog(this, "Valor inválido!", "Erro",

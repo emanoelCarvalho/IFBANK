@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import projeto.banco.dao.ClienteDAO;
+import projeto.banco.dao.cliente.ClienteDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.exception.CamposDeEntradaVaziosEx;
 import projeto.banco.exception.CpfInvalidoCurtoEx;
@@ -81,7 +81,7 @@ public class TelaPrincipal extends JFrame {
 
 			if (cliente != null) {
 				dispose();
-				new PainelConta(cliente);
+				new TelaConta(cliente);
 			} else {
 				JOptionPane.showMessageDialog(this, "Cliente não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
 			}

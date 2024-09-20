@@ -1,4 +1,4 @@
-package projeto.banco.dao;
+package projeto.banco.dao.cliente;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,13 +14,14 @@ import projeto.banco.exception.CpfInvalidoEx;
 import projeto.banco.model.cliente.Cliente;
 import projeto.banco.model.cliente.ICliente;
 
-public class ClienteDAO {
+public class ClienteDAO implements IClienteDAO {
 	private ConexaoMySql conn;
 
 	public ClienteDAO(ConexaoMySql conn) {
 		this.conn = conn;
 	}
 
+	@Override
 	public Boolean adicionarCliente(ICliente cliente) {
 		String sql = "INSERT INTO CLIENTES (CPF, NOME_COMPLETO) VALUES (?,?)";
 		PreparedStatement ppst = null;
@@ -48,7 +49,8 @@ public class ClienteDAO {
 		}
 
 	}
-
+	
+	@Override
 	public ICliente buscarClientePorCpf(String cpf) {
 		String sql = "SELECT * FROM CLIENTES WHERE CPF = ?";
 		PreparedStatement ppst = null;
@@ -95,6 +97,7 @@ public class ClienteDAO {
 		return dados;
 	}
 
+	@Override
 	public Boolean verificarCpf(String cpf) throws CpfExistenteEx {
 		String sql = "SELECT CPF FROM CLIENTES WHERE CPF = ?";
 		PreparedStatement ppst = null;
@@ -142,6 +145,7 @@ public class ClienteDAO {
 		return false;
 	}
 
+	@Override
 	public ICliente logarConta(String cpf) {
 		String sql = "SELECT * FROM CLIENTES WHERE CPF = ?";
 		PreparedStatement ppst = null;
@@ -198,6 +202,7 @@ public class ClienteDAO {
 		}
 	}
 
+	@Override
 	public List<String> listarClientes() {
 		List<String> listaClientes = new ArrayList<>();
 
@@ -238,6 +243,7 @@ public class ClienteDAO {
 		return listaClientes;
 	}
 
+	@Override
 	public List<String> getDadosClientes(String cpf) {
 		List<String> dadosClient = new ArrayList<>();
 

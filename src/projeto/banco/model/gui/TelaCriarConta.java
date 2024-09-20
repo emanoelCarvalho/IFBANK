@@ -15,7 +15,7 @@ import projeto.banco.model.conta.IConta;
 public class TelaCriarConta extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	ICliente cliente;
+	private ICliente cliente;
 
 	public TelaCriarConta(ICliente cliente) {
 		this.cliente = cliente;
@@ -45,7 +45,7 @@ public class TelaCriarConta extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				new PainelConta(cliente);
+				new TelaConta(cliente);
 				dispose();
 			}
 		});
@@ -60,7 +60,7 @@ public class TelaCriarConta extends JFrame {
 
 	public void voltar(ActionListener e) {
 		dispose();
-		new PainelConta(this.cliente);
+		new TelaConta(this.cliente);
 	}
 
 	public void adicionarContaCorrente(ActionEvent e) {
@@ -68,7 +68,7 @@ public class TelaCriarConta extends JFrame {
 		this.cliente.adicionarConta(novaConta);
 		this.cliente.carregarContas();
 		dispose();
-		new PainelConta(this.cliente);
+		new TelaConta(this.cliente);
 	}
 
 	public void adicionarContaPoupanca(ActionEvent e) {
@@ -76,6 +76,6 @@ public class TelaCriarConta extends JFrame {
 		this.cliente.adicionarConta(novaConta);
 		this.cliente.carregarContas();
 		dispose();
-		new PainelConta(this.cliente);
+		new TelaConta(this.cliente);
 	}
 }
