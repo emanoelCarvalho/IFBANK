@@ -1,6 +1,5 @@
 package projeto.banco.model.conta;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -11,9 +10,7 @@ import projeto.banco.dao.conta.ContaDAO;
 import projeto.banco.database.ConexaoMySql;
 import projeto.banco.model.transacao.RegistroTransacao;
 
-public class ContaPoupanca implements IConta, Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class ContaPoupanca implements IConta {
 
 	private Integer numero;
 	private String tipo;

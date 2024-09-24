@@ -499,16 +499,14 @@ public class ContaDAO implements IContaDAO {
 	@Override
 	public List<RegistroTransacao> emitirExtrato(int numeroConta, int mes, int ano) {
 		List<RegistroTransacao> extrato = new ArrayList<>();
-		String sql = "SELECT * FROM REGISTROS_TRANSACOES "
-				+ "WHERE (NUMERO_CONTA_ORIGEM = ? OR NUMERO_CONTA_DESTINO = ?) "
+		String sql = "SELECT * FROM REGISTROS_TRANSACOES " + "WHERE NUMERO_CONTA_ORIGEM = ? "
 				+ "AND YEAR(DATA_TRANSACAO) = ? AND MONTH(DATA_TRANSACAO) = ?";
 
 		try {
 			PreparedStatement ppst = this.conn.getConnection().prepareStatement(sql);
 			ppst.setInt(1, numeroConta);
-			ppst.setInt(2, numeroConta);
-			ppst.setInt(3, ano);
-			ppst.setInt(4, mes);
+			ppst.setInt(2, ano);
+			ppst.setInt(3, mes);
 
 			ResultSet rs = ppst.executeQuery();
 			while (rs.next()) {
