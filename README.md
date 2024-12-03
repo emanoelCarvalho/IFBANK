@@ -43,4 +43,4 @@ O projeto é organizado com base nos conceitos da programação orientada a obje
 
 ## Contato
 
-Caso tenha dúvidas sobre o projeto ou queira saber mais, entre em contato pelo email: [hemanoel718@gmail.com].
+Caso tenha dúvidas sobre o projeto ou queira saber mais, entre em contato pelo email: [ hemanoel718@gmail.com ].
